@@ -46,6 +46,52 @@ if (manualDeserialized != null) {
     System.Console.WriteLine($"{manualDeserialized.Name}, уровень {manualDeserialized.Level}");
 }
 
+// === Часть 3 ===
+Player hero = new() {
+    Name = "Ракета",
+    Level = 12
+};
+
+string heroJson = JsonSerializer.Serialize(hero, options);
+File.WriteAllText("player.json", heroJson);
+
+string heroFromFile = File.ReadAllText("player.json");
+
+Player? heroRestored = JsonSerializer.Deserialize<Player>(heroFromFile);
+
+System.Console.WriteLine();
+if (heroRestored != null) {
+    System.Console.WriteLine($"{heroRestored.Name}, уровень {heroRestored.Level}");
+}
+
+// === Часть 4 ===
+Player villain = new() {
+    Name = "Лорд Злыдень",
+    Level = 26
+};
+
+List<Player> players = [me, hero, villain];
+
+string playersJson = JsonSerializer.Serialize(players, options);
+File.WriteAllText("players.json", playersJson);
+
+string playersFromFile = File.ReadAllText("players.json");
+
+System.Console.WriteLine();
+try {
+    // В данном случае возникает общее исключение JsonException, которое связано с ошибкой при работе с JSON: синтаксические ошибки, незакрытая скобка и прочие
+    List<Player>? playersRestored = JsonSerializer.Deserialize<List<Player>>(playersFromFile, options);
+
+    if (playersRestored != null) {
+        System.Console.WriteLine($"Количество игроков: {playersRestored.Count}");
+        System.Console.WriteLine($"Второй игрок: {playersRestored[1].Name}");
+        System.Console.WriteLine($"Уровень последнего игрока: {playersRestored[2].Level}");
+    }
+}
+catch (JsonException ex) {
+    System.Console.WriteLine($"Ошибка: {ex.Message}");
+}
+
 class Player {
     public string Name { get; set; } = "";
     public int Level { get; set; }
