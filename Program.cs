@@ -6,93 +6,62 @@ JsonSerializerOptions options = new() {
     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
 };
 
-// === Часть 1 ===
-Player me = new() {
-    Name = "Илья",
-    Level = 2
+Console.Write("Имя: ");
+string playerName = Console.ReadLine()!;
+
+Console.Write("Громкость: ");
+int volume = int.Parse(Console.ReadLine()!);
+
+Console.Write("Полный экран (да/нет): ");
+bool isFullScreen = Console.ReadLine()! == "да";
+
+Console.Write("Сложность (Easy/Normal/Hard): ");
+Difficulty difficulty = Enum.Parse<Difficulty>(Console.ReadLine()!);
+
+GameSettings settings = new() {
+    PlayerName = playerName,
+    Volume = volume,
+    FullScreen = isFullScreen,
+    Difficulty = difficulty
 };
 
-// meJson имеет тип string, потому что объект класса преобразуется в строку
-string meJson = JsonSerializer.Serialize(me);
+string settingsPath = "settings.json";
 
-System.Console.WriteLine("--- Компактный вариант ---");
-System.Console.WriteLine(meJson);
+string jsonContent = JsonSerializer.Serialize(settings, options);
+File.WriteAllText(settingsPath, jsonContent);
+Console.WriteLine($"\nНастройки сохранены в {settingsPath}\n");
 
-meJson = JsonSerializer.Serialize(me, options);
+Console.WriteLine("Загрузка настроек...\n");
 
-System.Console.WriteLine();
-System.Console.WriteLine("--- Форматированный вариант ---");
-System.Console.WriteLine(meJson);
+if (File.Exists(settingsPath)) {
+    string loadedJson = File.ReadAllText(settingsPath);
+    
+    GameSettings? loadedSettings = JsonSerializer.Deserialize<GameSettings>(loadedJson);
 
-// === Часть 2 ===
-Player? meRestored = JsonSerializer.Deserialize<Player>(meJson);
-
-System.Console.WriteLine();
-if (meRestored != null) {
-    System.Console.WriteLine($"{meRestored.Name}, уровень {meRestored.Level}");
-}
-
-string manualJson = """
-{
-    "Name": "Александр",
-    "Level": 35
-}
-""";
-
-Player? manualDeserialized = JsonSerializer.Deserialize<Player>(manualJson);
-
-System.Console.WriteLine();
-if (manualDeserialized != null) {
-    System.Console.WriteLine($"{manualDeserialized.Name}, уровень {manualDeserialized.Level}");
-}
-
-// === Часть 3 ===
-Player hero = new() {
-    Name = "Ракета",
-    Level = 12
-};
-
-string heroJson = JsonSerializer.Serialize(hero, options);
-File.WriteAllText("player.json", heroJson);
-
-string heroFromFile = File.ReadAllText("player.json");
-
-Player? heroRestored = JsonSerializer.Deserialize<Player>(heroFromFile);
-
-System.Console.WriteLine();
-if (heroRestored != null) {
-    System.Console.WriteLine($"{heroRestored.Name}, уровень {heroRestored.Level}");
-}
-
-// === Часть 4 ===
-Player villain = new() {
-    Name = "Лорд Злыдень",
-    Level = 26
-};
-
-List<Player> players = [me, hero, villain];
-
-string playersJson = JsonSerializer.Serialize(players, options);
-File.WriteAllText("players.json", playersJson);
-
-string playersFromFile = File.ReadAllText("players.json");
-
-System.Console.WriteLine();
-try {
-    // В данном случае возникает общее исключение JsonException, которое связано с ошибкой при работе с JSON: синтаксические ошибки, незакрытая скобка и прочие
-    List<Player>? playersRestored = JsonSerializer.Deserialize<List<Player>>(playersFromFile, options);
-
-    if (playersRestored != null) {
-        System.Console.WriteLine($"Количество игроков: {playersRestored.Count}");
-        System.Console.WriteLine($"Второй игрок: {playersRestored[1].Name}");
-        System.Console.WriteLine($"Уровень последнего игрока: {playersRestored[2].Level}");
+    if (loadedSettings != null) {
+        Console.WriteLine($"Игрок: {loadedSettings.PlayerName}");
+        Console.WriteLine($"Громкость: {loadedSettings.Volume}");
+        
+        string fullScreenText = loadedSettings.FullScreen ? "да" : "нет";
+        Console.WriteLine($"Полный экран: {fullScreenText}");
+        
+        // enum сериализуется как число (0, 1, 2), но при выводе через ToString() автоматически преобразуется в строковое представление (Easy, Normal, Hard).
+        // Это стандартное поведение System.Text.Json для enum.
+        Console.WriteLine($"Сложность: {loadedSettings.Difficulty}");
     }
-}
-catch (JsonException ex) {
-    System.Console.WriteLine($"Ошибка: {ex.Message}");
+} else {
+    Console.WriteLine("Ошибка! Не удалось загрузить файл.");
 }
 
-class Player {
-    public string Name { get; set; } = "";
-    public int Level { get; set; }
+class GameSettings {
+    public string PlayerName { get; set; } = "";
+    public int Volume { get; set; }
+    public bool FullScreen { get; set; }
+    public Difficulty Difficulty { get; set; }
+}
+
+enum Difficulty {
+    Easy,
+    Normal,
+    Hard
 }
