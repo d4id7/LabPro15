@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "Элементы высшей математики",
+    "TimeInHours": 36,
+    "Assessment": 2
+  },
+  {
+    "Name": "Физическая культура",
+    "TimeInHours": 24,
+    "Assessment": 0
+  },
+  {
+    "Name": "Численные методы",
+    "TimeInHours": 24,
+    "Assessment": 1
+  }
+]
